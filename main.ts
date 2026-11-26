@@ -28,24 +28,24 @@ function fail(message: string): never {
   process.exit(1);
 }
 
+function requireGate(condition: boolean, message: string): void {
+  if (!condition) {
+    throw new Error(message);
+  }
+}
+
 function checkPitch(text: string): void {
-  if (!text || !text.trim()) {
-    throw new Error("pitch is empty or only whitespace");
-  }
+  requireGate(Boolean(text) && Boolean(text.trim()), "pitch is empty or only whitespace");
   // Character count is what the gate measures (not bytes).
-  if ([...text].length > MAX_CHARS) {
-    throw new Error(
-      `pitch is ${[...text].length} characters, over the ${MAX_CHARS} limit`,
-    );
-  }
+  const length = [...text].length;
+  requireGate(
+    length <= MAX_CHARS,
+    `pitch is ${length} characters, over the ${MAX_CHARS} limit`,
+  );
   // One line: no line breaks anywhere in the entry.
-  if (/[\r\n]/.test(text)) {
-    throw new Error("pitch must be a single line");
-  }
+  requireGate(!/[\r\n]/.test(text), "pitch must be a single line");
   // Must name a pizza and a topping, so the judge's first criterion is met.
-  if (!/pizza/i.test(text)) {
-    throw new Error("pitch must mention pizza");
-  }
+  requireGate(/pizza/i.test(text), "pitch must mention pizza");
   // Must encode as UTF-8, as the gate requires.
   new TextEncoder().encode(text);
 }
